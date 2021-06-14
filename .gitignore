@@ -1,4 +1,4 @@
-simplesvenv/
+tsvenv/
 *~
 tmp/
 *.pyc

@@ -2,8 +2,6 @@ import json
 import typing
 import logging
 
-
-
 _log = logging.getLogger(__name__)
 
 class BaseModel(dict):
