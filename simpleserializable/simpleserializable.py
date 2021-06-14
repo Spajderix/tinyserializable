@@ -1,5 +1,10 @@
 import json
 import typing
+import logging
+
+
+
+_log = logging.getLogger(__name__)
 
 class BaseModel(dict):
     def __init__(self, data_dict=None, **kwargs):
@@ -18,11 +23,14 @@ class BaseModel(dict):
         return f'{type(self).__name__}<{super().__repr__()}>'
 
     def __dir__(self):
-        return super().__dir__() + list(self.__annotations__.keys())
+        if _log.getEffectiveLevel() == logging.DEBUG:
+            return super().__dir__() + list(typing.get_type_hints(self.__class__).keys())
+        else:
+            return list(typing.get_type_hints(self.__class__).keys())
 
     def __construct_default_values(self):
         for k, v in self.__class__.__dict__.items():
-            if k in typing.get_type_hints(self).keys():
+            if k in typing.get_type_hints(self.__class__).keys():
                 self.__construct_field(k, v)
 
     def __construct_field(self, k, v):
@@ -42,14 +50,14 @@ class BaseModel(dict):
         return False
 
     def __get_field_class(self, key):
-        return typing.get_type_hints(self).get(key, dict)
+        return typing.get_type_hints(self.__class__).get(key, dict)
 
     def __setattr__(self, key, val):
-        if not key in typing.get_type_hints(self).keys():
+        if not key in typing.get_type_hints(self.__class__).keys():
             raise AttributeError(f'Not a valid attribute: {key}')
         self.__setitem__(key,val)
 
     def __getattr__(self, key):
-        if key not in self.__annotations__.keys():
+        if key not in typing.get_type_hints(self.__class__).keys():
             raise AttributeError(f'Not a valid attribute: {key}')
         return self.get(key, self.__class__.__dict__.get(key, None))
