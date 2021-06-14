@@ -1,7 +1,7 @@
 import json
 import typing
 
-class SimpleSerializableObject(dict):
+class BaseModel(dict):
     def __init__(self, data_dict=None, **kwargs):
         super().__init__()
         self.__construct_default_values()
@@ -36,7 +36,7 @@ class SimpleSerializableObject(dict):
         field_type = typing.get_type_hints(self).get(key, None)
         if field_type is None: return False
         try:
-            if issubclass(field_type, SimpleSerializableObject): return True
+            if issubclass(field_type, BaseModel): return True
         except TypeError:
             pass
         return False
@@ -53,31 +53,3 @@ class SimpleSerializableObject(dict):
         if key not in self.__annotations__.keys():
             raise AttributeError(f'Not a valid attribute: {key}')
         return self.get(key, self.__class__.__dict__.get(key, None))
-
-
-
-class Person(SimpleSerializableObject):
-    name: str
-    last_name: str
-    sex: typing.Optional[str]
-    employed: typing.Union[str, bool] = True
-    job_history: typing.Dict
-
-
-class Employee(SimpleSerializableObject):
-    personal_info: Person
-    active: bool
-
-
-
-p1 = Person(name = 'ka', last_name = 'er')
-e1 = Employee(active = True, personal_info = p1)
-
-e2 = Employee(active = False, personal_info = {
-    'name': 'Arturito',
-    'employed': False
-})
-
-
-if __name__ == '__main__':
-    print('t')

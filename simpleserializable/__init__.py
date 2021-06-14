@@ -1,0 +1,1 @@
+from .simpleserializable import BaseModel

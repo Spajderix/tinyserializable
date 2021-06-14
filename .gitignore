@@ -2,3 +2,4 @@ simplesvenv/
 *~
 tmp/
 *.pyc
+.vscode
