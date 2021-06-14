@@ -1,0 +1,4 @@
+simplesvenv/
+*~
+tmp/
+*.pyc
