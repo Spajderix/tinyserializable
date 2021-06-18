@@ -5,12 +5,12 @@ import logging
 _log = logging.getLogger(__name__)
 
 class BaseModel(dict):
-    def __init__(self, data_dict=None, **kwargs):
+    def __init__(self, __data_dict=None, **kwargs):
         super().__init__()
         self.__construct_default_values()
 
-        if isinstance(data_dict, dict):
-            construct_data = data_dict
+        if isinstance(__data_dict, dict):
+            construct_data = __data_dict
         else:
             construct_data = kwargs
 
@@ -54,8 +54,9 @@ class BaseModel(dict):
         if not key in typing.get_type_hints(self.__class__).keys():
             raise AttributeError(f'Not a valid attribute: {key}')
         self.__setitem__(key,val)
-
-    def __getattr__(self, key):
-        if key not in typing.get_type_hints(self.__class__).keys():
-            raise AttributeError(f'Not a valid attribute: {key}')
-        return self.get(key, self.__class__.__dict__.get(key, None))
+    
+    def __getattribute__(self, key):
+        model_class = dict.__getattribute__(self, '__class__')
+        if key in typing.get_type_hints(model_class).keys():
+            return dict.get(self, key, model_class.__dict__.get(key, None))
+        return dict.__getattribute__(self, key)

@@ -3,3 +3,4 @@ tsvenv/
 tmp/
 *.pyc
 .vscode
+*.org
