@@ -118,6 +118,37 @@ class TestTinySerializable(unittest.TestCase):
         
         self.assertIsInstance(loaded_object.field_nested, TestNestedModel)
         
+    def test_allow_property_getter(self):
+        "BaseModel allows defining property getters"
+        class TestModel(BaseModel):
+            field_int: int
+            
+            @property
+            def FieldInt(self) -> int:
+                return self.field_int + 3
+        
+        t1 = TestModel(field_int = 12)
+        
+        self.assertEqual(t1['field_int'], 12)
+        self.assertEqual(t1.FieldInt, 15)
+        
+    def test_allow_property_setter(self):
+        "BaseModel allows defining property setters"
+        class TestModel(BaseModel):
+            field_int: int
+            
+            @property
+            def FieldInt(self) -> int:
+                return self.field_int + 3
+            @FieldInt.setter
+            def FieldInt(self, newvalue: int):
+                self.field_int = newvalue - 3
+        
+        t1 = TestModel(field_int = 12)
+        t1.FieldInt = 8
+        
+        self.assertEqual(t1.field_int, 5)
+        
     def test_serializes_to_json(self):
         "BaseModel correctly serializes to json string"
         class TestNestedModel(BaseModel):

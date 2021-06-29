@@ -1,8 +1,5 @@
 import json
 import typing
-import logging
-
-_log = logging.getLogger(__name__)
 
 class BaseModel(dict):
     def __init__(self, __data_dict=None, **kwargs):
@@ -21,10 +18,7 @@ class BaseModel(dict):
         return f'{type(self).__name__}<{super().__repr__()}>'
 
     def __dir__(self):
-        if _log.getEffectiveLevel() == logging.DEBUG:
-            return super().__dir__() + list(typing.get_type_hints(self.__class__).keys())
-        else:
-            return list(typing.get_type_hints(self.__class__).keys())
+        return set(super().__dir__() + list(typing.get_type_hints(self.__class__).keys()))
 
     def __construct_default_values(self):
         for k, v in self.__class__.__dict__.items():
@@ -49,11 +43,17 @@ class BaseModel(dict):
 
     def __get_field_class(self, key):
         return typing.get_type_hints(self.__class__).get(key, dict)
+    
+    def __is_property(self, key):
+        return isinstance(object.__getattribute__(self.__class__, key), property)
 
     def __setattr__(self, key, val):
-        if not key in typing.get_type_hints(self.__class__).keys():
+        if key in typing.get_type_hints(self.__class__).keys():
+            self.__setitem__(key,val)
+        elif self.__is_property(key):
+            object.__setattr__(self, key, val)
+        else:
             raise AttributeError(f'Not a valid attribute: {key}')
-        self.__setitem__(key,val)
     
     def __getattribute__(self, key):
         model_class = dict.__getattribute__(self, '__class__')
