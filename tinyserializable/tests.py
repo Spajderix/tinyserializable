@@ -94,6 +94,15 @@ class TestTinySerializable(unittest.TestCase):
         self.assertEqual(t1.field_string, "override")
         self.assertEqual(t1.field_list, None)
         
+    def test_ignores_undefined_fields(self):
+        "BaseModel, when provided with undefined field, will ignore and load"
+        class TestModel(BaseModel):
+            field_int: int
+
+        t1 = TestModel({"field_int": 1, "field_string": "abcdef"})
+
+        self.assertEqual(t1.field_int, 1)
+
     def test_nested_objects_properly_loaded_from_dict(self):
         "BaseModel, when loading from dict on construct, properly loads nested BaseModel objects"
         class TestNestedModel(BaseModel):
@@ -118,6 +127,37 @@ class TestTinySerializable(unittest.TestCase):
         
         self.assertIsInstance(loaded_object.field_nested, TestNestedModel)
         
+    def test_nested_objects_properly_loaded_from_list(self):
+        "BaseModel, when loading from dict on construct, properly loads nested list of BaseModel objects"
+        class TestNestedModel(BaseModel):
+            nested_string: str
+
+        class TestModel(BaseModel):
+            field_int: int
+            field_nested: typing.List[TestNestedModel]
+
+        initial_data = {
+            "field_int": 12,
+            "field_nested": [
+                {
+                    "nested_string": "nested"
+                },
+                {
+                    "nested_string": "second nested"
+                }
+            ]
+        }
+
+        loaded_object = TestModel(**initial_data)
+
+        expected_loaded_object_nested_list = [
+            TestNestedModel(nested_string = "nested"),
+            TestNestedModel(nested_string = "second nested")
+        ]
+
+        self.assertIsInstance(loaded_object.field_nested, list)
+        self.assertListEqual(loaded_object.field_nested, expected_loaded_object_nested_list)
+
     def test_allow_property_getter(self):
         "BaseModel allows defining property getters"
         class TestModel(BaseModel):
