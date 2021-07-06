@@ -31,7 +31,14 @@ class BaseModel(dict):
             self.__setattr__(k,field_type(v))
         elif self.__is_serializable_object_list_field and isinstance(v, list):
             field_component_type = self.__get_field_list_component_class(k)
-            self.__setattr__(k, [field_component_type(element) for element in v])
+            self.__setattr__(
+                k,
+                [
+                    field_component_type(element)
+                    if isinstance(element, dict) and not isinstance(element, BaseModel) else element
+                    for element in v
+                ]
+            )
         elif self.__is_defined_field(k):
             self.__setattr__(k,v)
 

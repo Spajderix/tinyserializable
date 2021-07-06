@@ -158,6 +158,29 @@ class TestTinySerializable(unittest.TestCase):
         self.assertIsInstance(loaded_object.field_nested, list)
         self.assertListEqual(loaded_object.field_nested, expected_loaded_object_nested_list)
 
+    def test_nested_objects_not_regenerated_from_list(self):
+        "BaseModel, when loading dict on construct, does not regenerate BaseModel on nested list of BaseModel objects, if not needed"
+        class TestNestedBaseModel(BaseModel):
+            pass
+
+        class TestNestedModel(BaseModel):
+            nested_string: str
+
+        class TestModel(BaseModel):
+            field_int: int
+            field_nested: typing.List[TestNestedBaseModel]
+
+        initial_object = TestModel(
+            field_int = 12,
+            field_nested = [
+                TestNestedModel(nested_string = "nested"),
+                TestNestedModel(nested_string = "nested")
+            ]
+        )
+
+        self.assertIsInstance(initial_object.field_nested[0], TestNestedModel)
+        self.assertIsInstance(initial_object.field_nested[1], TestNestedModel)
+
     def test_allow_property_getter(self):
         "BaseModel allows defining property getters"
         class TestModel(BaseModel):
